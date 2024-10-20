@@ -4,12 +4,17 @@ import { Button, TextField } from "@mui/material";
 
 const TaskForm: React.FC = () => {
   const [title, setTitle] = useState("");
+  const [error, setError] = useState("");
   const { addTask } = useContext(TaskContext);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) return;
+    if (title.trim().length <= 3) {
+      setError("Task title must be at least 3 characters long.");
+      setTimeout(() => setError(""), 5000);
+      return;
+    }
     addTask(title);
     setTitle("");
   };
@@ -21,15 +26,17 @@ const TaskForm: React.FC = () => {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         fullWidth
+        error={!!error}
+        helperText={error}
         sx={{
           "& .MuiOutlinedInput-root": {
             pl: 2,
             margin: "0.5rem",
-            borderRadius: "0.75rem", // Add border radius to the input field
-            height: "40px", // Adjust the height of the input box
-            padding: "0.5rem", // Optional: Adjust padding to ensure it fits well
+            borderRadius: "0.75rem",
+            height: "40px",
+            padding: "0.5rem",
             "& input": {
-              padding: "10px", // Adjust padding within the input to fit the reduced height
+              padding: "10px",
             },
           },
         }}
@@ -38,6 +45,7 @@ const TaskForm: React.FC = () => {
         type="submit"
         variant="contained"
         fullWidth
+        disabled={!title.length}
         sx={{
           mt: 2,
           background: "black",

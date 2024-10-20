@@ -74,7 +74,7 @@ const Navbar: React.FC = () => {
   };
 
   useEffect(() => {
-    statusRef.current = status; // Update the ref whenever status changes
+    statusRef.current = status;
   }, [status]);
 
   const debouncedFetchTasks = useRef(
@@ -92,7 +92,7 @@ const Navbar: React.FC = () => {
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value); // Update the state immediately
+    setSearch(e.target.value);
     handleSearch(e.target.value);
   };
 

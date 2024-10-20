@@ -13,6 +13,15 @@ import {
   updateTask,
 } from "../services/apiService";
 import { sortTasks } from "../utils/utility";
+import { Snackbar } from "@mui/material";
+import MuiAlert, { AlertProps } from "@mui/material/Alert";
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref
+) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const TaskContext = createContext<TaskContextProps>({
   tasks: [],
@@ -30,6 +39,21 @@ const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const showSnackbar = (message: string, severity: "success" | "error") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
 
   const fetchTasks = useCallback(
     async (search: string = "", status: string = "") => {
@@ -40,9 +64,11 @@ const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
         setTasks(sortTasks(taskList));
         setCurrentPage(currentPage);
         setTotalPages(totalPages);
-        setLoading(false);
+        showSnackbar("Tasks fetched successfully", "success");
       } catch (error: any) {
         console.error(`Error while fetching the tasks: ${error.message}`);
+        showSnackbar("Error fetching tasks", "error");
+      } finally {
         setLoading(false);
       }
     },
@@ -58,10 +84,12 @@ const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     try {
       const response = await createTask(title);
       setTasks((prevTasks) => [...prevTasks, response]);
-      setLoading(false);
+      showSnackbar("Task added successfully", "success");
     } catch (error: any) {
-      setLoading(false);
       console.error(`Error while adding the task: ${error.message}`);
+      showSnackbar("Error adding task", "error");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -79,10 +107,12 @@ const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
             prevTasks.map((task) => (task._id === id ? updatedTask : task))
           )
         );
-        setLoading(false);
+        showSnackbar("Task completed successfully", "success");
       } catch (error: any) {
-        setLoading(false);
         console.error(`Error while updating the task: ${error.message}`);
+        showSnackbar("Error updating task", "error");
+      } finally {
+        setLoading(false);
       }
     },
     [tasks]
@@ -94,11 +124,13 @@ const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
       const response = await deleteTask(id);
       if (response) {
         setTasks((prevTasks) => prevTasks.filter((task) => task._id !== id));
+        showSnackbar("Task deleted successfully", "success");
       }
-      setLoading(false);
     } catch (error: any) {
-      setLoading(false);
       console.error(`Error deleting the task: ${error.message}`);
+      showSnackbar("Error deleting task", "error");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -125,7 +157,20 @@ const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     ]
   );
 
-  return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;
+  return (
+    <>
+      <TaskContext.Provider value={value}>{children}</TaskContext.Provider>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={5000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </>
+  );
 };
 
 export { TaskContext, TaskProvider };
