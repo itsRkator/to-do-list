@@ -10,11 +10,7 @@ const getTasks = async (
   req: Request<{}, {}, {}, TaskQuery>,
   res: Response
 ): Promise<any> => {
-  const {
-    search = "",
-    status,
-    // page = "1", limit = "10"
-  } = req.query;
+  const { search = "", status, page = "1", limit = "10" } = req.query;
   try {
     // const pageNumber = Number(page) || 1;
     // const limitNumber = Number(limit) || 10;
