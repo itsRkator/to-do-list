@@ -131,7 +131,6 @@ Create a `.env` file in the `backend` folder and add the following:
 ```bash
 MONGO_URI=<DB_URI>
 PORT=8000
-CORS_ORIGIN=<FRONTEND_URL> // http://localhost:3000
 ```
 
 Replace `<username>` and `<password>` with your **MongoDB** credentials.
