@@ -1,18 +1,31 @@
-import React from "react";
-import { TaskProvider } from "./components/TaskContext";
-import { Container } from "@mui/material";
+import React, { useContext } from "react";
+import { TaskContext, TaskProvider } from "./components/TaskContext";
+import {
+  Box,
+  CircularProgress,
+  Container,
+  LinearProgress,
+} from "@mui/material";
 import TaskForm from "./components/TaskForm";
-import TaskFilter from "./components/TaskFilter";
 import TaskList from "./components/TaskList";
+import Navbar from "./components/Navbar";
 
 const App: React.FC = () => {
+  const { loading } = useContext(TaskContext);
   return (
     <TaskProvider>
+      <Navbar />
       <Container maxWidth="sm" sx={{ mt: 5 }}>
-        <h1>Today</h1>
-        <TaskForm />
-        <TaskFilter />
+        {loading && (
+          <>
+            <LinearProgress color="success" />
+            <Box display="flex" justifyContent="center">
+              <CircularProgress size={100} color="success" />
+            </Box>
+          </>
+        )}
         <TaskList />
+        <TaskForm />
       </Container>
     </TaskProvider>
   );

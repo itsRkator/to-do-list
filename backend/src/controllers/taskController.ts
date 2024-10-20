@@ -10,10 +10,14 @@ const getTasks = async (
   req: Request<{}, {}, {}, TaskQuery>,
   res: Response
 ): Promise<any> => {
-  const { search = "", status, page = "1", limit = "10" } = req.query;
+  const {
+    search = "",
+    status,
+    // page = "1", limit = "10"
+  } = req.query;
   try {
-    const pageNumber = Number(page) || 1;
-    const limitNumber = Number(limit) || 10;
+    // const pageNumber = Number(page) || 1;
+    // const limitNumber = Number(limit) || 10;
 
     const searchQuery: any = {
       title: { $regex: search, $options: "i" },
@@ -25,16 +29,16 @@ const getTasks = async (
       searchQuery.completed = false;
     }
 
-    const tasks = await Task.find(searchQuery)
-      .limit(limitNumber)
-      .skip((pageNumber - 1) * limitNumber);
+    const tasks = await Task.find(searchQuery);
+    // .limit(limitNumber)
+    // .skip((pageNumber - 1) * limitNumber);
 
-    const taskCount = await Task.countDocuments(searchQuery);
+    // const taskCount = await Task.countDocuments(searchQuery);
 
     return res.json({
       tasks,
-      currentPage: pageNumber,
-      totalPages: Math.ceil(taskCount / limitNumber),
+      // currentPage: pageNumber,
+      // totalPages: Math.ceil(taskCount / limitNumber),
     });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
@@ -91,6 +95,7 @@ const deleteTask = async (
   const { id } = req.params;
   try {
     const task = await Task.findByIdAndDelete(id);
+
     if (!task) {
       return res.status(404).json({ message: "Task not found" });
     }

@@ -12,48 +12,62 @@ import {
   getTasks,
   updateTask,
 } from "../services/apiService";
+import { sortTasks } from "../utils/utility";
 
 const TaskContext = createContext<TaskContextProps>({
   tasks: [],
-  fetchTasks: () => {},
-  addTask: async (title: string) => {},
-  toggleTask: async (id: string) => {},
-  removeTask: async (id: string) => {},
+  loading: false,
+  currentPage: 1,
+  totalPages: 1,
+  fetchTasks: (search?: string, status?: string) => {},
+  addTask: (title: string) => {},
+  toggleTask: (id: string) => {},
+  removeTask: (id: string) => {},
 });
 
 const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const fetchTasks = async (search: string = "", status: string = "") => {
-    try {
-      const response = await getTasks(search, status);
-      const { tasks, currentPage, totalPages } = response;
-      setTasks(tasks);
-      setCurrentPage(currentPage);
-      setTotalPages(totalPages);
-    } catch (error: any) {
-      console.error(`Error while fetching the tasks: ${error.message}`);
-    }
-  };
+  const fetchTasks = useCallback(
+    async (search: string = "", status: string = "") => {
+      setLoading(true);
+      try {
+        const response = await getTasks(search, status);
+        const { tasks: taskList, currentPage, totalPages } = response;
+        setTasks(sortTasks(taskList));
+        setCurrentPage(currentPage);
+        setTotalPages(totalPages);
+        setLoading(false);
+      } catch (error: any) {
+        console.error(`Error while fetching the tasks: ${error.message}`);
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [fetchTasks]);
 
-  const addTask = async (title: string) => {
+  const addTask = useCallback(async (title: string) => {
+    setLoading(true);
     try {
       const response = await createTask(title);
-      const updatedTaskList = [...tasks, response];
-      setTasks(updatedTaskList);
+      setTasks((prevTasks) => [...prevTasks, response]);
+      setLoading(false);
     } catch (error: any) {
+      setLoading(false);
       console.error(`Error while adding the task: ${error.message}`);
     }
-  };
+  }, []);
 
   const toggleTask = useCallback(
     async (id: string) => {
+      setLoading(true);
       const task = tasks.find((task) => task._id === id);
       try {
         if (!task) {
@@ -61,29 +75,37 @@ const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
         }
         const updatedTask = await updateTask(id, !task.completed);
         setTasks((prevTasks) =>
-          prevTasks.map((task) => (task._id === id ? updatedTask : task))
+          sortTasks(
+            prevTasks.map((task) => (task._id === id ? updatedTask : task))
+          )
         );
+        setLoading(false);
       } catch (error: any) {
+        setLoading(false);
         console.error(`Error while updating the task: ${error.message}`);
       }
     },
     [tasks]
   );
 
-  const removeTask = async (id: string) => {
+  const removeTask = useCallback(async (id: string) => {
+    setLoading(true);
     try {
       const response = await deleteTask(id);
       if (response) {
         setTasks((prevTasks) => prevTasks.filter((task) => task._id !== id));
       }
+      setLoading(false);
     } catch (error: any) {
+      setLoading(false);
       console.error(`Error deleting the task: ${error.message}`);
     }
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
       tasks,
+      loading,
       currentPage,
       totalPages,
       fetchTasks,
@@ -91,7 +113,16 @@ const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
       toggleTask,
       removeTask,
     }),
-    [addTask, currentPage, tasks, toggleTask, totalPages]
+    [
+      tasks,
+      loading,
+      currentPage,
+      totalPages,
+      fetchTasks,
+      addTask,
+      toggleTask,
+      removeTask,
+    ]
   );
 
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;

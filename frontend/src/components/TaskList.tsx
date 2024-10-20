@@ -13,7 +13,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 
 const TaskList: React.FC = () => {
-  const { tasks, toggleTask, removeTask } = useContext(TaskContext)!;
+  const { tasks, toggleTask, removeTask } = useContext(TaskContext);
 
   const updateTaskHandler = (id: string, completed: boolean) => {
     if (completed) return;
@@ -56,7 +56,10 @@ const TaskList: React.FC = () => {
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <IconButton
                   edge="end"
-                  onClick={() => removeTask(task._id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeTask(task._id);
+                  }}
                   size="small"
                   sx={{ marginLeft: "0.5rem" }}
                 >
@@ -67,7 +70,9 @@ const TaskList: React.FC = () => {
           ))}
         </List>
       ) : (
-        <span>No task added...</span>
+        <Box textAlign="center">
+          There is currently no Task for the selected type...
+        </Box>
       )}
     </>
   );

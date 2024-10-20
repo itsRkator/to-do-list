@@ -5,5 +5,4 @@ const rateLimiter = rateLimit({
   max: 150,
 });
 
-
-export {rateLimiter}
+export { rateLimiter };

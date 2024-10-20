@@ -6,6 +6,9 @@ export interface Task {
 
 export interface TaskContextProps {
   tasks: Task[];
+  loading: boolean;
+  currentPage: number;
+  totalPages: number;
   fetchTasks: (search?: string, status?: string) => void;
   addTask: (title: string) => void;
   toggleTask: (id: string) => void;
@@ -13,5 +16,5 @@ export interface TaskContextProps {
 }
 
 export interface TaskProviderProps {
-    children: ReactNode;
-  }
+  children: ReactNode;
+}
